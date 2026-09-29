@@ -1,0 +1,82 @@
+# Experiment and System Configuration
+experiment:
+  title: "Deep Learning-Based Image Denoising Using CNN Autoencoders"
+  seed: 42
+  device: "cpu" # Standardized for reliable CPU execution without CUDA dependencies
+
+# Primary Dataset Specification (Curated & Disjoint)
+dataset:
+  description: "Curated BSDS natural training set with Set12 benchmark testing"
+  # Training Split (35 natural images from BSDS benchmark, cropped into 64x64 patches)
+  train:
+    source: "BSDS_Curated"
+    dir: "data/raw/train"
+    num_images: 35
+    patch_size: 64
+    stride: 48
+  # Validation Split (10 natural images from BSDS benchmark, kept separate from train)
+  validation:
+    source: "BSDS_Curated"
+    dir: "data/raw/val"
+    num_images: 10
+  # Test Benchmark (Standard Set12 benchmark dataset, 12 classic DIP test images)
+  test_benchmark:
+    source: "Set12"
+    dir: "data/test_benchmark"
+    num_images: 12
+    image_names:
+      - "01.png" # Cameraman
+      - "02.png" # House
+      - "03.png" # Peppers
+      - "04.png" # Starfish
+      - "05.png" # Monarch
+      - "06.png" # Airplane
+      - "07.png" # Parrot
+      - "08.png" # Lena
+      - "09.png" # Barbara
+      - "10.png" # Boat
+      - "11.png" # Man
+      - "12.png" # Couple
+  batch_size: 32
+  num_workers: 0 # Windows safe multiprocessing setting
+
+# Controlled Additive White Gaussian Noise (AWGN)
+noise:
+  levels: [15, 25, 50] # Standard standard deviations on [0, 255] scale
+  seed: 42
+  clip_range: [0.0, 1.0]
+
+# Baseline Classical Spatial Filters (Justified standard parameters)
+traditional_filters:
+  gaussian:
+    kernel_size: 5
+    sigma: 1.0
+  median:
+    kernel_size: 3
+  bilateral:
+    diameter: 7
+    sigma_color: 50
+    sigma_space: 50
+
+# Custom CNN Autoencoder
+model:
+  name: "CompactCNNAutoencoder"
+  in_channels: 3
+  out_channels: 3
+  base_channels: 32
+  use_skip_connections: true
+
+# Training Hyperparameters
+training:
+  epochs: 15
+  learning_rate: 0.001
+  weight_decay: 1e-5
+  loss_type: "mse" # Pure Mean Squared Error reconstruction loss
+  checkpoint_dir: "results/checkpoints"
+  log_dir: "results/logs"
+  save_best_only: true
+
+# Evaluation & Output Paths
+evaluation:
+  tables_dir: "results/tables"
+  figures_dir: "results/figures"

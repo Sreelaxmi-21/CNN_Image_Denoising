@@ -1,0 +1,19 @@
+# Core Deep Learning & Scientific Computing
+torch>=2.0.0
+numpy>=1.24.0
+scipy>=1.10.0
+
+# Image Processing & Metrics
+opencv-python>=4.8.0
+pillow>=10.0.0
+scikit-image>=0.21.0
+
+# Visualization & Reporting
+matplotlib>=3.7.0
+pandas>=2.0.0
+
+# Configuration
+pyyaml>=6.0
+
+# Web Application Demo (Post-research phase)
+streamlit>=1.28.0

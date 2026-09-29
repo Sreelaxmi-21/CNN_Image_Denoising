@@ -1,0 +1,43 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# PyTorch checkpoints and model weights
+*.pth
+*.pt
+*.onnx
+results/checkpoints/*.pth
+
+# Datasets & benchmark image files (exclude raw image files, track specs and .gitkeep)
+data/raw/train/*.png
+data/raw/val/*.png
+data/test_benchmark/*.png
+data/processed/*
+!data/raw/train/.gitkeep
+!data/raw/val/.gitkeep
+!data/test_benchmark/.gitkeep
+!data/processed/.gitkeep
+!data/DATASET_SPEC.md
+
+# Generated experiment artifacts
+results/figures/*
+results/tables/*
+results/logs/*
+!results/figures/.gitkeep
+!results/tables/.gitkeep
+!results/logs/.gitkeep
+
+# Environments & IDEs
+.env
+.venv
+env/
+venv/
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db

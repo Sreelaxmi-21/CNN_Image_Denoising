@@ -170,7 +170,8 @@ def train_model(
 
     criterion = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=epochs, eta_min=1e-5)
+    eta_min = float(cfg["training"].get("min_learning_rate", 1e-5))
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=epochs, eta_min=eta_min)
 
     print("=" * 80)
     print(f" TRAINING SETUP: {cfg['experiment'].get('title')}")
@@ -192,14 +193,92 @@ def train_model(
     }
 
     best_val_loss = float("inf")
+    start_epoch = 1
 
-    # CSV header
-    with open(csv_log_path, "w", encoding="utf-8") as f:
-        f.write("epoch,train_loss,val_loss,val_psnr,val_ssim,lr,time_sec\n")
+    # Resume from an existing checkpoint if one is available
+    if checkpoint_path.exists():
+        print(f"Loading checkpoint: {checkpoint_path}")
+
+        checkpoint = torch.load(
+            checkpoint_path,
+            map_location=device,
+            weights_only=False
+        )
+
+        model.load_state_dict(checkpoint["model_state_dict"])
+
+        if "optimizer_state_dict" in checkpoint:
+            optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
+            if lr_override is not None:
+                for param_group in optimizer.param_groups:
+                    param_group["lr"] = lr_override
+
+        if "scheduler_state_dict" in checkpoint:
+            scheduler.load_state_dict(checkpoint["scheduler_state_dict"])
+            if epochs > scheduler.T_max:
+                scheduler.T_max = epochs
+
+        start_epoch = checkpoint.get("epoch", 0) + 1
+        best_val_loss = checkpoint.get("val_loss", float("inf"))
+
+        print(f"Resuming from epoch {start_epoch}")
+        print(f"Previous best validation loss: {best_val_loss:.6f}")
+
+        # Restore previous JSON history if available
+        if json_log_path.exists():
+            try:
+                with open(json_log_path, "r", encoding="utf-8") as f:
+                    prev_json = json.load(f)
+                if "history" in prev_json and isinstance(prev_json["history"], dict):
+                    prev_hist = prev_json["history"]
+                    epochs_list = prev_hist.get("epoch", [])
+                    valid_indices = [i for i, ep in enumerate(epochs_list) if ep < start_epoch]
+                    for k in history.keys():
+                        if k in prev_hist and isinstance(prev_hist[k], list):
+                            history[k] = [prev_hist[k][i] for i in valid_indices if i < len(prev_hist[k])]
+            except Exception as e:
+                print(f"Warning: Could not restore previous JSON history: {e}")
+
+        # Fallback: restore history from CSV if JSON history was empty
+        if not history["epoch"] and csv_log_path.exists():
+            try:
+                with open(csv_log_path, "r", encoding="utf-8") as f:
+                    csv_lines = f.readlines()
+                for line in csv_lines[1:]:
+                    parts = line.strip().split(",")
+                    if len(parts) >= 7 and parts[0].isdigit():
+                        ep = int(parts[0])
+                        if ep < start_epoch:
+                            history["epoch"].append(ep)
+                            history["train_loss"].append(float(parts[1]))
+                            history["val_loss"].append(float(parts[2]))
+                            history["val_psnr"].append(float(parts[3]))
+                            history["val_ssim"].append(float(parts[4]))
+                            history["lr"].append(float(parts[5]))
+                            history["epoch_time"].append(float(parts[6]))
+            except Exception as e:
+                print(f"Warning: Could not restore history from CSV: {e}")
+
+    # Prepare CSV log file (preserve previous records if resuming)
+    csv_header = "epoch,train_loss,val_loss,val_psnr,val_ssim,lr,time_sec\n"
+    if start_epoch > 1 and csv_log_path.exists():
+        with open(csv_log_path, "r", encoding="utf-8") as f:
+            existing_lines = f.readlines()
+        preserved_lines = [csv_header]
+        for line in existing_lines[1:]:
+            parts = line.strip().split(",")
+            if parts and parts[0].isdigit():
+                if int(parts[0]) < start_epoch:
+                    preserved_lines.append(line if line.endswith("\n") else line + "\n")
+        with open(csv_log_path, "w", encoding="utf-8") as f:
+            f.writelines(preserved_lines)
+    elif not csv_log_path.exists() or start_epoch == 1:
+        with open(csv_log_path, "w", encoding="utf-8") as f:
+            f.write(csv_header)
 
     start_total_time = time.time()
 
-    for epoch in range(1, epochs + 1):
+    for epoch in range(start_epoch, epochs + 1):
         t0 = time.time()
 
         current_lr = optimizer.param_groups[0]["lr"]
@@ -242,13 +321,14 @@ def train_model(
                 torch.save(checkpoint_payload, checkpoint_path)
 
     total_training_time = time.time() - start_total_time
+    cumulative_time = sum(history["epoch_time"]) if history["epoch_time"] else total_training_time
 
     # Save JSON history
     summary_data = {
         "experiment": cfg["experiment"]["title"],
-        "total_epochs": epochs,
+        "total_epochs": max(epochs, len(history["epoch"])),
         "best_val_loss": best_val_loss,
-        "total_training_time_seconds": total_training_time,
+        "total_training_time_seconds": cumulative_time,
         "checkpoint_file": str(checkpoint_path),
         "history": history
     }

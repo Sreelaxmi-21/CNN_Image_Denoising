@@ -1,0 +1,80 @@
+# Experiment Configuration: Controlled Retraining with Denser Stride 16
+experiment:
+  title: "Controlled Retraining Experiment: Stride 16, 30 Epochs"
+  seed: 42
+  device: "cpu" # Standardized for reliable CPU execution
+
+# Primary Dataset Specification (Curated & Disjoint)
+dataset:
+  description: "Curated BSDS natural training set with Set12 benchmark testing (Stride 16)"
+  train:
+    source: "BSDS_Curated"
+    dir: "data/raw/train"
+    num_images: 35
+    patch_size: 64
+    stride: 16 # Denser extraction yielding 2,240 patches (vs 315 in baseline)
+  validation:
+    source: "BSDS_Curated"
+    dir: "data/raw/val"
+    num_images: 10
+  test_benchmark:
+    source: "Set12"
+    dir: "data/test_benchmark"
+    num_images: 12
+    image_names:
+      - "01.png" # Cameraman
+      - "02.png" # House
+      - "03.png" # Peppers
+      - "04.png" # Starfish
+      - "05.png" # Monarch
+      - "06.png" # Airplane
+      - "07.png" # Parrot
+      - "08.png" # Lena
+      - "09.png" # Barbara
+      - "10.png" # Boat
+      - "11.png" # Man
+      - "12.png" # Couple
+  batch_size: 32
+  num_workers: 0
+
+# Controlled Additive White Gaussian Noise (AWGN)
+noise:
+  levels: [15, 25, 50]
+  seed: 42
+  clip_range: [0.0, 1.0]
+
+# Baseline Classical Spatial Filters (Unchanged)
+traditional_filters:
+  gaussian:
+    kernel_size: 5
+    sigma: 1.0
+  median:
+    kernel_size: 3
+  bilateral:
+    diameter: 7
+    sigma_color: 50
+    sigma_space: 50
+
+# Custom CNN Autoencoder (Architecture Unchanged)
+model:
+  name: "CompactCNNAutoencoder"
+  in_channels: 3
+  out_channels: 3
+  base_channels: 32
+  use_skip_connections: true
+
+# Training Hyperparameters for Controlled Run
+training:
+  epochs: 30
+  learning_rate: 0.001
+  min_learning_rate: 0.00001
+  weight_decay: 1e-5
+  loss_type: "mse" # Pure Mean Squared Error reconstruction loss
+  checkpoint_dir: "results/experiments/stride16_epochs30/checkpoints"
+  log_dir: "results/experiments/stride16_epochs30/logs"
+  save_best_only: true
+
+# Evaluation & Output Paths for Controlled Run
+evaluation:
+  tables_dir: "results/experiments/stride16_epochs30/tables"
+  figures_dir: "results/experiments/stride16_epochs30/figures"

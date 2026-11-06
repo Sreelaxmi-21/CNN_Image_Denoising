@@ -80,3 +80,6 @@ training:
 evaluation:
   tables_dir: "results/tables"
   figures_dir: "results/figures"
+  # Default inference checkpoint (stride-16 / 30-epoch experiment, Epoch 29, val_psnr≈28.13 dB).
+  # Override by passing --checkpoint on the CLI or by changing this path.
+  inference_checkpoint: "results/experiments/stride16_epochs30/checkpoints/best_model.pth"

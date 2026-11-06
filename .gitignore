@@ -1,15 +1,33 @@
-# Byte-compiled / optimized / DLL files
+# Python bytecode and test caches
 __pycache__/
 *.py[cod]
 *$py.class
+.pytest_cache/
 
-# PyTorch checkpoints and model weights
+# Virtual environments and local IDE settings
+.venv/
+venv/
+env/
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+.streamlit/secrets.toml
+secrets.toml
+credentials.json
+token.json
+
+# Model weights (distribute separately when appropriate)
 *.pth
 *.pt
 *.onnx
-results/checkpoints/*.pth
 
-# Datasets & benchmark image files (exclude raw image files, track specs and .gitkeep)
+# Downloaded image datasets
 data/raw/train/*.png
 data/raw/val/*.png
 data/test_benchmark/*.png
@@ -20,23 +38,13 @@ data/processed/*
 !data/processed/.gitkeep
 !data/DATASET_SPEC.md
 
-# Generated experiment artifacts
+# Generated baseline artifacts
 results/figures/*
 results/tables/*
 results/logs/*
 !results/figures/.gitkeep
 !results/tables/.gitkeep
 !results/logs/.gitkeep
-
-# Environments & IDEs
-.env
-.venv
-env/
-venv/
-.vscode/
-.idea/
-*.swp
-*.swo
 
 # OS files
 .DS_Store

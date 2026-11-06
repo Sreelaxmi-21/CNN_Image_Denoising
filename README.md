@@ -84,6 +84,7 @@ The app expects the trained checkpoint at:
 ```text
 results/experiments/stride16_epochs30/checkpoints/best_model.pth
 ```
+Download the trained checkpoint from the [v1.0.0 GitHub release](https://github.com/Sreelaxmi-21/CNN_Image_Denoising/releases/tag/v1.0.0).
 
 Model weight files (`.pth`, `.pt`, and `.onnx`) are excluded by `.gitignore`, so cloning the repository alone will not provide the CNN checkpoint. To distribute a runnable CNN demo, attach the checkpoint to a GitHub Release or provide a trusted download location and explain where to place it. Do not commit a checkpoint until its size, license, and repository hosting limits have been reviewed.
 

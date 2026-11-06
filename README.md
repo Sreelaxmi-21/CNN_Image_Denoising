@@ -11,6 +11,16 @@ A research and demonstration project comparing a compact CNN autoencoder with cl
 - CSV downloads for batch metrics and filtered benchmark rows.
 - CPU-friendly configuration and repeatable AWGN seed (42).
 
+## App screenshots
+
+These previews show the denoising comparisons and benchmark summaries presented by the app. The analytics images are generated from the saved Set12 experiment.
+
+![Single-image denoising comparison at sigma 25](docs/screenshots/single-image-demo-output.jpg)
+
+| Research analytics: PSNR | Research analytics: SSIM |
+|---|---|
+| ![PSNR benchmark summary](docs/screenshots/research-psnr-summary.png) | ![SSIM benchmark summary](docs/screenshots/research-ssim-summary.png) |
+
 ## Benchmark results
 
 The table below reports the saved Set12 experiment means across all 12 images and all three noise levels. Latency is hardware-dependent and should be treated as a reference for the machine used during evaluation.
@@ -46,7 +56,7 @@ Run these commands from the project folder:
 py -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
 python scripts/download_dataset.py
 ```
 
